@@ -1,0 +1,296 @@
+{
+  "name": "Job Candidate Matcher from Excel Drive",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "mode": "webhook",
+        "options": {
+          "responseMode": "lastNode"
+        }
+      },
+      "id": "8d01b736-4f79-4c44-b571-9703650ef567",
+      "name": "Chat Trigger",
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        2160,
+        512
+      ],
+      "webhookId": "c028d179-63b8-4e4b-bbf8-64a9989649f4"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "instructions",
+              "value": "Este flujo recibe un JSON con requisitos del puesto y devuelve un JSON con candidatos coincidentes",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "bc7254cb-f983-4e1d-b16a-dd3dfd0275ec",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2384,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={ $json.chatInput }",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Eres un asistente experto en recursos humanos especializado en encontrar candidatos para puestos de trabajo. Tu tarea es:\n\n1. Recibirás datos de una solicitud que contiene los requisitos del puesto buscado.\n2. Usar la herramienta Hojas de cálculo de Google para leer TODOS los datos de los candidatos.\n3. Analizar el perfil de cada candidato comparándolo con los requisitos de la solicitud.\n4. Calcular un porcentaje de coincidencia del 1 al 100 para cada candidato basado en qué tan bien cumplen con los requisitos.\n5. Identificar a los mejores candidatos.\n\nPara cada candidato que coincida, debes proporcionar:\n- nombre: El nombre completo del candidato\n- cargo_perfil: El cargo, estudio o perfil profesional del candidato\n- porcentaje_coincidencia: Un número del 1 al 100 que indica qué tan bien coincide con la solicitud\n- razon: Explicación de por qué este candidato coincide con los requisitos\n\nIMPORTANTE:\n- Lee la hoja de cálculo completa para tener todos los candidatos solo si la columna estado esta en \"recibido\".\n- Sé preciso en el cálculo del porcentaje de coincidencia.\n- Considera habilidades, experiencia, formación y certificaciones.\n- Ordena los candidatos por porcentaje de coincidencia (mayor a menor)."
+        }
+      },
+      "id": "34e66b22-5a9b-4733-88ce-4c453410c015",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        2896,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "e7063ab4-2a09-44c6-b12e-3a7f50453bb6",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        2832,
+        736
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "HZqRftA9qS1dlDrP",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Reads candidate information from Google Sheets including all their qualifications, experience, skills, and contact details",
+        "documentId": {
+          "__rl": true,
+          "value": "1md_3EscUFQ2nWrQG3ftCdSps2Hfnxp65I9L2DMBj3Co",
+          "mode": "list",
+          "cachedResultName": "Pueba_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1md_3EscUFQ2nWrQG3ftCdSps2Hfnxp65I9L2DMBj3Co/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 10174087,
+          "mode": "list",
+          "cachedResultName": "Hoja 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1md_3EscUFQ2nWrQG3ftCdSps2Hfnxp65I9L2DMBj3Co/edit#gid=10174087"
+        },
+        "options": {}
+      },
+      "id": "b22f67ad-c931-4ffe-876a-937d2f07c465",
+      "name": "Google Sheets Tool",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        2960,
+        736
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6azkVLrxu9C6dnDQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"candidatos\": {\n      \"type\": \"array\",\n      \"description\": \"Lista de candidatos que coinciden con la solicitud\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"nombre\": {\"type\": \"string\", \"description\": \"Nombre completo del candidato\"},\n          \"cargo_perfil\": {\"type\": \"string\", \"description\": \"Cargo, estudio o perfil profesional del candidato\"},\n          \"porcentaje_coincidencia\": {\"type\": \"number\", \"description\": \"Porcentaje del 1 al 100 de coincidencia con la solicitud\"},\n          \"razon\": {\"type\": \"string\", \"description\": \"Explicación de por qué coincide con los requisitos\"}\n        },\n        \"required\": [\"nombre\", \"cargo_perfil\", \"porcentaje_coincidencia\", \"razon\"]\n      }\n    }\n  },\n  \"required\": [\"candidatos\"]\n}",
+        "autoFix": true
+      },
+      "id": "826e69cd-b553-45a3-a5dd-cca04480f8d5",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3088,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f959322e-c931-42d6-a0ff-0d9b0ceb7e91",
+              "name": "chatInput",
+              "value": "={{ $json.chatInput }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "260228ea-cb52-4aee-9bce-3ce8a3bb6a43",
+      "name": "Prepare Solicitud Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2608,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "resultado",
+              "value": "={{ $json.output }}",
+              "type": "objectValue"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4c90a174-3913-4271-890a-116978da2f28",
+      "name": "Format JSON Output",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3296,
+        512
+      ]
+    }
+  ],
+  "pinData": {
+    "Chat Trigger": [
+      {
+        "json": {
+          "chatInput": "Necesito un programador",
+          "sessionId": "sesion-uy2iceyvr"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Chat Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Prepare Solicitud Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Solicitud Data": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Format JSON Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "6a870cb5-db22-4bff-8905-97f5d0d5cf30",
+  "meta": {
+    "instanceId": "6cd143cec39ceec0fa738f176d141ea4d89f803b7493bb94a3aeb59d53eee241"
+  },
+  "id": "CUbElbvK9M1-3ek9OJr9z",
+  "tags": []
+}

@@ -1,0 +1,431 @@
+{
+  "name": "My workflow 2",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "includeSpamTrash": true
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "id": "2a992e54-3564-4b42-afec-49311011c849",
+      "name": "Gmail Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -5472,
+        768
+      ],
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "F00buEOpuB7XuxiG",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "emailSubject",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "emailFrom",
+              "value": "={{ $json.from.text }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "receivedDate",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "f2366d56-2792-46ea-bdf3-a0f44b1b8521",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -5248,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "binaryPropertyName": "attachment_0",
+        "options": {}
+      },
+      "id": "ec29e2dc-0103-4996-867d-61ecd6fed188",
+      "name": "Extract Text from Attachment",
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        -5024,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.text }}",
+        "attributes": {
+          "attributes": [
+            {
+              "name": "nombre",
+              "description": "First name"
+            },
+            {
+              "name": "apellido",
+              "description": "Last name"
+            },
+            {
+              "name": "cedula",
+              "description": "ID number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d75a1ffe-18bf-4065-89ce-5fdab76b4aba",
+      "name": "Extract Structured Data",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        -4352,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "nombre",
+              "value": "={{ $json.output.nombre }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "apellido",
+              "value": "={{ $('Extract Structured Data').item.json.output.apellido }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "cedula",
+              "value": "={{ $('Extract Structured Data').item.json.output.cedula }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2026654-12d7-4917-b50a-db400b9637ba",
+      "name": "Prepare Data for Sheets",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3776,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1md_3EscUFQ2nWrQG3ftCdSps2Hfnxp65I9L2DMBj3Co",
+          "mode": "list",
+          "cachedResultName": "Pueba_n8n",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1md_3EscUFQ2nWrQG3ftCdSps2Hfnxp65I9L2DMBj3Co/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 10174087,
+          "mode": "list",
+          "cachedResultName": "Hoja 2",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1md_3EscUFQ2nWrQG3ftCdSps2Hfnxp65I9L2DMBj3Co/edit#gid=10174087"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [
+            "ID"
+          ],
+          "schema": [
+            {
+              "id": "ID",
+              "displayName": "ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "nombre",
+              "displayName": "nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "apellido",
+              "displayName": "apellido",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cedula",
+              "displayName": "cedula",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d9bc3582-8045-4e8d-aebe-9b42f8ab330c",
+      "name": "Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -3552,
+        768
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6azkVLrxu9C6dnDQ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": true
+        }
+      },
+      "id": "c2209df0-c49d-4560-8a6b-58aa840cd45e",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -4800,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "id": "bb051494-0817-48a6-8fa3-d89e12d1c144",
+      "name": "Wait Between API Calls",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -4000,
+        640
+      ],
+      "webhookId": "932d8bbe-58f1-41d9-807e-8be2fec4791d"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": []
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "2fa1a8d0-1491-466b-b4ed-c17fa2e51a73",
+      "name": "Pass Item Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -4576,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        -4432,
+        848
+      ],
+      "id": "65f71276-b56c-4893-afc6-4605d1a185e9",
+      "name": "Groq Chat Model",
+      "executeOnce": true,
+      "retryOnFail": true,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "groqApi": {
+          "id": "ODP3KjkDtejYhOVZ",
+          "name": "Groq account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Extract Text from Attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Text from Attachment": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Data for Sheets": {
+      "main": [
+        [
+          {
+            "node": "Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Sheets": {
+      "main": [
+        []
+      ]
+    },
+    "Wait Between API Calls": {
+      "main": [
+        [
+          {
+            "node": "Prepare Data for Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Pass Item Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Item Data": {
+      "main": [
+        [
+          {
+            "node": "Extract Structured Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Structured Data": {
+      "main": [
+        [
+          {
+            "node": "Wait Between API Calls",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract Structured Data",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "adc4e3b4-9bd4-487a-997d-4dcb12e057fd",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6cd143cec39ceec0fa738f176d141ea4d89f803b7493bb94a3aeb59d53eee241"
+  },
+  "id": "SymP7pl8koAE-xvVhZ2K6",
+  "tags": []
+}
