@@ -15,7 +15,11 @@ public class Periodo_academicoService {
         return periodoAcademicoRepository.findAll();
     }
 
-    public Periodo_academico guardar (Periodo_academico periodoAcademico){
+    public Periodo_academico guardar(Periodo_academico periodoAcademico) {
+        // REGLA DE NEGOCIO: Si el nuevo periodo es ACTIVO, cerrar los demás.
+        if (periodoAcademico.isActivo()) {
+            desactivarPeriodosAnteriores();
+        }
         return periodoAcademicoRepository.save(periodoAcademico);
     }
 
@@ -30,6 +34,25 @@ public class Periodo_academicoService {
         }
         else {
             return null;
+        }
+    }
+
+    private void desactivarPeriodosAnteriores() {
+        List<Periodo_academico> activos = periodoAcademicoRepository.findByActivo(true);
+        for (Periodo_academico p : activos) {
+            p.setActivo(false);
+            periodoAcademicoRepository.save(p);
+        }
+    }
+
+    // Cierra todos MENOS el que estamos editando (Usado al Actualizar)
+    private void desactivarPeriodosAnterioresExcluyendo(Long idActual) {
+        List<Periodo_academico> activos = periodoAcademicoRepository.findByActivo(true);
+        for (Periodo_academico p : activos) {
+            if (p.getId() != idActual) { // No cerramos el que estamos editando ahorita
+                p.setActivo(false);
+                periodoAcademicoRepository.save(p);
+            }
         }
     }
 }

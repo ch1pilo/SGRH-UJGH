@@ -3,12 +3,10 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "inasistencia")
+public class Inacistencia {
 
-public class inacistencia {
-
-    @Entity
-    @Table(name = "inasistencia")
-    public class Inasistencia {
 
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,6 +26,17 @@ public class inacistencia {
         @Column(name = "factor_aplicado", nullable = false, precision = 5, scale = 2)
         private BigDecimal factorAplicado;
 
+        @Column(name = "activo")
+        private Boolean activo = true;
+
+        public Boolean getActivo() {
+            return activo;
+        }
+
+        public void setActivo(Boolean activo) {
+            this.activo = activo;
+        }
+
         @Column(length = 255)
         private String observacion;
 
@@ -36,14 +45,6 @@ public class inacistencia {
         @ManyToOne(fetch = FetchType.LAZY)
         @JoinColumn(name = "id_empleado", nullable = false)
         private Empleado empleado;
-
-
-        // --- CONSTRUCTORES ---
-
-        public Inasistencia() {
-        }
-
-        // --- GETTERS Y SETTERS ---
 
         public Long getId() {
             return id;
@@ -101,7 +102,4 @@ public class inacistencia {
             this.empleado = empleado;
         }
 
-
-
-    }
 }

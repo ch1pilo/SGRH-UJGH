@@ -1,10 +1,6 @@
 package com.example.sigerh_ujgh.service;
 
-import com.example.sigerh_ujgh.entity.Inasistencia;
-import com.example.sigerh_ujgh.entity.Empleado;
-import com.example.sigerh_ujgh.entity.Carga_academica;
-import com.example.sigerh_ujgh.entity.Turno;
-import com.example.sigerh_ujgh.entity.Configuracion_global; // Esta es la que ya tienes
+import com.example.sigerh_ujgh.entity.*;
 
 import com.example.sigerh_ujgh.repository.InasistenciaRepository;
 import com.example.sigerh_ujgh.repository.EmpleadoRepository;
@@ -18,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -40,8 +37,13 @@ public class InasistenciasServices {
         /**
          * Registra una falta, calcula el costo y la guarda.
          */
+
+        public List<Inacistencia> listar() {
+            return inasistenciaRepo.findAll();
+        }
+
         @Transactional
-        public Inasistencia registrarInasistencia(Long idEmpleado, Integer horas, LocalDate fecha, String observacion) {
+        public Inacistencia registrarInasistencia(Long idEmpleado, Integer horas, LocalDate fecha, String observacion) {
 
             // 1. VALIDAR EMPLEADO
             Empleado empleado = empleadoRepo.findById(idEmpleado)
@@ -91,7 +93,7 @@ public class InasistenciasServices {
                     .setScale(2, RoundingMode.HALF_UP);
 
             // 7. GUARDAR
-            Inasistencia inasistencia = new Inasistencia();
+            Inacistencia inasistencia = new Inacistencia();
             inasistencia.setEmpleado(empleado);
             inasistencia.setFecha(fecha);
             inasistencia.setHoras(horas);

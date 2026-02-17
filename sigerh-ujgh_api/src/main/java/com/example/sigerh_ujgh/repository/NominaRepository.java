@@ -13,4 +13,7 @@ public interface NominaRepository extends JpaRepository<Nomina, Long> {
     List<Nomina> findByEmpleadoId(Long idEmpleado);
 
     void deleteByLoteNominaId(Long idLoteNomina);
+
+    // En NominaRepository.java
+    boolean existsByLoteNominaId(Long idLoteNomina);
 }

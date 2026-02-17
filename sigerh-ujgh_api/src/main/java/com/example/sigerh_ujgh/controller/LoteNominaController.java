@@ -28,7 +28,7 @@ public class LoteNominaController {
 
     @PutMapping("/cerrar/{id}")
     public ResponseEntity<LoteNomina> cerrar(@PathVariable Long id) {
-        LoteNomina lote = service.cerrarLote(id);
+        LoteNomina lote = service.cerrarLoteNomina(id);
         if (lote != null) return ResponseEntity.ok(lote);
         return ResponseEntity.notFound().build();
     }

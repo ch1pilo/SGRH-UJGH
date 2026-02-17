@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface EmpleadoRepository extends JpaRepository<Empleado, Long> {
     List<Empleado> findByEstatus(String estatus);
+
+    boolean existsByPersonaId(Long idPersona);
 }

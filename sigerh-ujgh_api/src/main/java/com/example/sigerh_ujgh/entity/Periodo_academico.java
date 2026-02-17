@@ -2,6 +2,7 @@ package com.example.sigerh_ujgh.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Data
@@ -55,10 +56,12 @@ public class Periodo_academico {
     @Column
     private String nombre;
 
-    @Column
+    @Column(name = "fecha_inicio")
+    @JsonProperty("fechaInicio")
     private LocalDate fecha_inicio;
 
-    @Column
+    @Column(name = "fecha_fin")
+    @JsonProperty("fechaFin")
     private LocalDate fecha_fin;
 
     @Column

@@ -18,6 +18,7 @@ public class EntrevistaService {
         return entrevistaRepository.save(entrevista);
     }
 
+    
     public Entrevista actualizar (Long id, Entrevista entrevista){
         Entrevista existe = entrevistaRepository.findById(id).orElse(null);
         if (existe != null ){

@@ -1,5 +1,6 @@
 package com.example.sigerh_ujgh.controller;
-import com.example.sigerh_ujgh.entity.Inasistencia;
+import com.example.sigerh_ujgh.entity.Facultad;
+import com.example.sigerh_ujgh.entity.Inacistencia;
 import com.example.sigerh_ujgh.service.InasistenciasServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,20 +18,19 @@ public class InacistenciaController {
 
     // Listar todas (opcional, por si quieres verlas)
     @GetMapping
-    public List<Inasistencia> listar() {
-        // Aquí podrías crear un método listar en tu servicio si lo necesitas
-        return null;
+    public List<Inacistencia> listar() {
+        return inasistenciaService.listar();
     }
 
     // Guardar: Recibe la Entidad directa, saca los datos y llama al cálculo
     @PostMapping
-    public ResponseEntity<?> guardar(@RequestBody Inasistencia inasistencia) {
+    public ResponseEntity<?> guardar(@RequestBody Inacistencia inasistencia) {
         try {
             // Extraemos los datos básicos del objeto que viene en el JSON
             // Nota: Asumimos que dentro de 'inasistencia' viene el objeto 'empleado' con su ID
             Long idEmpleado = inasistencia.getEmpleado().getId();
 
-            Inasistencia nuevaFalta = inasistenciaService.registrarInasistencia(
+            Inacistencia nuevaFalta = inasistenciaService.registrarInasistencia(
                     idEmpleado,
                     inasistencia.getHoras(),
                     inasistencia.getFecha(),

@@ -1,6 +1,7 @@
 package com.example.sigerh_ujgh.entity;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
@@ -50,8 +51,20 @@ public class Entrevista {
     private Persona persona;
 
     @Column
+    @JsonProperty("fechaProgramada") // Para que React lo envíe como fechaProgramada
     private LocalDate fecha_programada;
     @Column
     private String observacion;
+
+    public Boolean getEstatus() {
+        return estatus;
+    }
+
+    public void setEstatus(Boolean estatus) {
+        this.estatus = estatus;
+    }
+
+    @Column()
+    private Boolean estatus = true;
 
 }
