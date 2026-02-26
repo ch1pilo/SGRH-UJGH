@@ -26,6 +26,15 @@ public class ContratoService {
 
     public Contrato guardar(Contrato contrato) {
         // Aquí podrías validar fechas o lógica de negocio si es necesario
+
+
+        boolean tieneContratoActivo = repository.existsByEmpleadoIdAndActivoTrue(contrato.getEmpleado().getId());
+
+        if (tieneContratoActivo) {
+            // Si ya tiene uno, disparamos un error y detenemos todo
+            throw new RuntimeException("El empleado ya tiene un contrato activo. Debe finalizar el actual antes de asignar uno nuevo.");
+        }
+
         return repository.save(contrato);
     }
 

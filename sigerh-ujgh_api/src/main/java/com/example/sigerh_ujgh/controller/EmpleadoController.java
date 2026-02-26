@@ -36,9 +36,18 @@ public class EmpleadoController {
         empleadoService.eliminar(id);
     }
 
-    // =======================================================
-    // 4. ¡ESTE ES EL QUE TE FALTA! - CONTRATAR POR ID
-    // =======================================================
+    @PutMapping("/{id}/estatus")
+    public ResponseEntity<?> actualizarEstatus(@PathVariable Long id, @RequestBody Map<String, String> request) {
+        try {
+            System.out.println("-----------entrando al controladorr----------");
+            String nuevoEstatus = request.get("estatus");
+            Empleado empleadoActualizado = empleadoService.actualizarEstatus(id, nuevoEstatus);
+            return ResponseEntity.ok(empleadoActualizado);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/contratar")
     public ResponseEntity<?> contratar(@RequestBody Map<String, Object> payload) {
         try {

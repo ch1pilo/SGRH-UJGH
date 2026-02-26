@@ -5,7 +5,6 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Entity
-@Data
 @Table(name = "lote_nomina")
 public class LoteNomina {
 
@@ -21,6 +20,46 @@ public class LoteNomina {
 
     @Column(name = "fecha_fin")
     private LocalDate fechaFin;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public LocalDate getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(LocalDate fechaInicio) {
+        this.fechaInicio = fechaInicio;
+    }
+
+    public LocalDate getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(LocalDate fechaFin) {
+        this.fechaFin = fechaFin;
+    }
+
+    public String getEstatus() {
+        return estatus;
+    }
+
+    public void setEstatus(String estatus) {
+        this.estatus = estatus;
+    }
 
     @Column
     private String estatus; // "ABIERTO", "CERRADO"

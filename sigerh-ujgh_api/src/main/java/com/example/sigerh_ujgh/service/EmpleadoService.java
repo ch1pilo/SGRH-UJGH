@@ -35,9 +35,21 @@ public class EmpleadoService {
     }
 
     @Transactional
+    public Empleado actualizarEstatus(Long idEmpleado, String nuevoEstatus) {
+        // 1. Buscamos al empleado
+        Empleado empleado = empleadoRepository.findById(idEmpleado)
+                .orElseThrow(() -> new RuntimeException("Error: No existe el empleado con ID " + idEmpleado));
+
+        // 2. Actualizamos solo el estatus
+        empleado.setEstatus(nuevoEstatus);
+
+        // 3. Guardamos los cambios
+        return empleadoRepository.save(empleado);
+    }
+
+    @Transactional
     public Empleado registrarPorIdPersona(Long idPersona, LocalDate fechaIngreso) {
 
-        // 1. Buscamos la persona (porque la necesitamos para crear el empleado)
         Persona persona = personaRepository.findById(idPersona)
                 .orElseThrow(() -> new RuntimeException("Error: No existe persona con ID " + idPersona));
 

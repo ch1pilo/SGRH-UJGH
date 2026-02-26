@@ -212,6 +212,9 @@ public class NominaService {
                 // ============================================================
                 // F. GUARDAR RECIBO
                 // ============================================================
+                // ============================================================
+                // F. GUARDAR RECIBO
+                // ============================================================
                 Nomina recibo = new Nomina();
                 recibo.setLoteNomina(lote);
                 recibo.setEmpleado(empleado);
@@ -219,7 +222,12 @@ public class NominaService {
                 // Ingresos
                 recibo.setSueldo_base(totalSueldoFijo);
                 recibo.setTotal_ingreso(totalIngresoDolares);
-                // ... (Tus setters de horas diurnas/nocturnas van aqui)
+
+                // --- AQUÍ ESTÁ LA CORRECCIÓN: GUARDAMOS LOS MONTOS DE LAS HORAS ---
+                recibo.setHora_diurna(totalPagoDiurno);
+                recibo.setHora_nocturna(totalPagoNocturno);
+                recibo.setHora_fin(totalPagoFinesSemana);
+                // ------------------------------------------------------------------
 
                 // Deducciones Ley
                 recibo.setMonto_sso(montoSSO);
@@ -227,7 +235,7 @@ public class NominaService {
                 recibo.setMonto_faov(montoFAOV);
 
                 // --- NUEVO: GUARDAR INASISTENCIAS ---
-                recibo.setMonto_descuento_hora(totalInasistencias); // <--- TU COLUMNA NUEVA
+                recibo.setMonto_descuento_hora(totalInasistencias);
 
                 // Préstamos
                 recibo.setOtros_descuento(totalPrestamos);

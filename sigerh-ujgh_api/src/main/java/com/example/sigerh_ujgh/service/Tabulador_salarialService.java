@@ -26,6 +26,7 @@ public class Tabulador_salarialService {
             existe.setNivel(tabuladorSalarial.getNivel());
             existe.setSueldo_base(tabuladorSalarial.getSueldo_base());
             existe.setValor_hora(tabuladorSalarial.getValor_hora());
+            existe.setActivo(tabuladorSalarial.getActivo());
             return tabuladorSalarialRepository.save(existe);
         }
         else {

@@ -46,6 +46,17 @@ public class Tabulador_salarial {
     private long id;
 
     @Column
+    private Boolean activo = true;
+
+    public Boolean getActivo() {
+        return activo;
+    }
+
+    public void setActivo(Boolean activo) {
+        this.activo = activo;
+    }
+
+    @Column
     private String nivel;
     @Column
     private float sueldo_base;

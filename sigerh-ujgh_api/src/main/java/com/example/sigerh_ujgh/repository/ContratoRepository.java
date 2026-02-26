@@ -13,7 +13,9 @@ public interface ContratoRepository extends JpaRepository<Contrato, Long> {
     @Query("SELECT DISTINCT c.empleado FROM Contrato c WHERE c.activo = true")
     List<Empleado> findEmpleadosConContratosActivos();
 
-    List<Contrato> findByEmpleadoIdAndActivoTrue(Long idEmpleado);
+    boolean existsByEmpleadoIdAndActivoTrue(Long empleadoId);
+
+    List<Contrato> findByEmpleadoIdAndActivoTrue(Long empleadoId);
 
 
 }
