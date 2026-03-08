@@ -24,8 +24,7 @@ public class TurnoService {
         Turno existe = turnoRepository.findById(id).orElse(null);
         if (existe != null){
             existe.setNombre(turno.getNombre());
-            existe.setNocturno(turno.isNocturno());
-            existe.setFin_de_semana(turno.isFin_de_semana());
+            existe.setFactor_multiplicador(turno.getFactor_multiplicador());
             existe.setHora_inicio(turno.getHora_inicio());
             existe.setHora_fin(turno.getHora_fin());
             return turnoRepository.save(existe);

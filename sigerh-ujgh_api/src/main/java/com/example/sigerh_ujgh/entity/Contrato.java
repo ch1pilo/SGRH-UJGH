@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
 
-@Entity
 @Data
+@Entity
 public class Contrato {
 
     public Long getId() {

@@ -7,9 +7,6 @@ import java.util.Optional;
 import java.util.List;
 
 @Repository
-
 public interface Novedad_descuentoRepository extends JpaRepository<Novedad_descuento, Long>{
     List<Novedad_descuento> findByEmpleadoIdAndProcesadoFalse(Long idEmpleado);
-
-
 }

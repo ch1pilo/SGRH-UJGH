@@ -1,11 +1,11 @@
 package com.example.sigerh_ujgh.controller;
 
-import com.example.sigerh_ujgh.entity.Nomina;
-import com.example.sigerh_ujgh.service.NominaService;
+import com.example.sigerh_ujgh.dto.ReciboNominaDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import com.example.sigerh_ujgh.service.NominaService;
+import com.example.sigerh_ujgh.entity.Nomina;
 import java.util.List;
 
 @RestController
@@ -28,9 +28,12 @@ public class NominaController {
         }
     }
 
-    // VER LOS RECIBOS: Muestra cuánto cobró cada uno en ese lote
+
+
     @GetMapping("/lote/{idLoteNomina}")
     public List<Nomina> listarPorLote(@PathVariable Long idLoteNomina) {
         return service.listarPorLote(idLoteNomina);
     }
+
+
 }

@@ -3,6 +3,8 @@ package com.example.sigerh_ujgh.entity;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -45,20 +47,12 @@ public class Turno {
         this.hora_fin = hora_fin;
     }
 
-    public boolean isNocturno() {
-        return nocturno;
+    public BigDecimal getFactor_multiplicador() {
+        return factor_multiplicador;
     }
 
-    public void setNocturno(boolean nocturno) {
-        this.nocturno = nocturno;
-    }
-
-    public boolean isFin_de_semana() {
-        return fin_de_semana;
-    }
-
-    public void setFin_de_semana(boolean fin_de_semana) {
-        this.fin_de_semana = fin_de_semana;
+    public void setFactor_multiplicador(BigDecimal factor_multiplicador) {
+        this.factor_multiplicador = factor_multiplicador;
     }
 
     @Id
@@ -71,7 +65,5 @@ public class Turno {
     @Column
     private LocalTime hora_fin;
     @Column
-    private boolean nocturno = false;
-    @Column
-    private boolean fin_de_semana = false;
+    private BigDecimal factor_multiplicador;
 }

@@ -1,5 +1,6 @@
 package com.example.sigerh_ujgh.controller;
 
+import com.example.sigerh_ujgh.dto.ReciboNominaDTO;
 import com.example.sigerh_ujgh.entity.LoteNomina;
 import com.example.sigerh_ujgh.service.LoteNominaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,11 @@ public class LoteNominaController {
     @PostMapping
     public ResponseEntity<LoteNomina> crear(@RequestBody LoteNomina obj) {
         return ResponseEntity.ok(service.guardar(obj));
+    }
+
+    @GetMapping("/lote/{id}")
+    public List<ReciboNominaDTO> obtenerR(@RequestBody ReciboNominaDTO id){
+        return service.obtenerReporteNomina(id.getIdNomina());
     }
 
     @PutMapping("/cerrar/{id}")

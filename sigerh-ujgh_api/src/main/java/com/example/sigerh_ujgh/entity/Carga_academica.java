@@ -69,6 +69,7 @@ public class Carga_academica {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+
     @ManyToOne
     @JoinColumn( name = "id_empleado", nullable = false)
     private Empleado empleado;

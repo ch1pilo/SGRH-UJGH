@@ -21,6 +21,7 @@ public class EntrevistaController {
 
     @PostMapping
     public Entrevista guardar(@RequestBody Entrevista entrevista){
+        System.out.printf("entrando al controlador... ");
         return entrevistaService.guardar(entrevista);
     }
 

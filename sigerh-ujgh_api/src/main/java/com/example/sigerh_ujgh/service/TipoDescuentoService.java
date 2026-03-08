@@ -13,6 +13,7 @@ public class TipoDescuentoService {
     private TipoDescuentoRepository repository;
 
     public List<Tipo_descuento> listar() {
+        System.out.println("lista de tipos: " + repository.findAll());
         return repository.findAll();
     }
 

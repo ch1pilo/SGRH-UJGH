@@ -46,7 +46,7 @@ public class Entrevista {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne
     @JoinColumn (name = "id_persona", nullable = false)
     private Persona persona;
 
