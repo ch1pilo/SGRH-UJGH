@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Data
@@ -316,4 +317,14 @@ public class Nomina {
     @Column
     private BigDecimal total_bs;
 
+    @OneToMany(mappedBy = "nomina", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Detalle_nomina> detalles;
+
+    public List<Detalle_nomina> getDetalles() {
+        return detalles;
+    }
+
+    public void setDetalles(List<Detalle_nomina> detalles) {
+        this.detalles = detalles;
+    }
 }

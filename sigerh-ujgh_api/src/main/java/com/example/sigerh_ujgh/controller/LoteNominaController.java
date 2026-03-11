@@ -27,11 +27,6 @@ public class LoteNominaController {
         return ResponseEntity.ok(service.guardar(obj));
     }
 
-    @GetMapping("/lote/{id}")
-    public List<ReciboNominaDTO> obtenerR(@RequestBody ReciboNominaDTO id){
-        return service.obtenerReporteNomina(id.getIdNomina());
-    }
-
     @PutMapping("/cerrar/{id}")
     public ResponseEntity<LoteNomina> cerrar(@PathVariable Long id) {
         LoteNomina lote = service.cerrarLoteNomina(id);

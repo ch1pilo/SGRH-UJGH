@@ -35,5 +35,11 @@ public class NominaController {
         return service.listarPorLote(idLoteNomina);
     }
 
+    @GetMapping("/recibo/lote/{idLote}")
+    public ResponseEntity<List<ReciboNominaDTO>> obtenerRecibosPorLote(@PathVariable Long idLote) {
+        List<ReciboNominaDTO> recibos = service.obtenerReporteNomina(idLote);
+        return ResponseEntity.ok(recibos);
+    }
+
 
 }

@@ -1,5 +1,7 @@
 package com.example.sigerh_ujgh.service;
 
+import com.example.sigerh_ujgh.dto.DetalleReciboDTO;
+import com.example.sigerh_ujgh.dto.ReciboNominaDTO;
 import com.example.sigerh_ujgh.entity.*;
 import com.example.sigerh_ujgh.repository.*;
 import org.slf4j.Logger;
@@ -10,7 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class NominaService {
@@ -33,6 +37,10 @@ public class NominaService {
     private InasistenciaRepository inasistenciaRepo;
     @Autowired
     private Novedad_descuentoRepository novedadRepo;
+    @Autowired
+    private Detalle_nominaRepository detalleNominaRepo;
+    @Autowired
+    private AjusteRepository ajusteRepository;
 
     public List<Nomina> listarPorLote(Long idLoteNomina) {
         return nominaRepository.findByLoteNominaId(idLoteNomina);
@@ -42,6 +50,106 @@ public class NominaService {
         return configRepository.findByClave(clave)
                 .map(Configuracion_global::getValor)
                 .orElse(valorDefecto);
+    }
+
+    public List<ReciboNominaDTO> obtenerReporteNomina(Long idLoteNomina) {
+        List<Nomina> nominas = nominaRepository.findByLoteNominaId(idLoteNomina);
+
+        return nominas.stream().map(n -> {
+            ReciboNominaDTO dto = new ReciboNominaDTO();
+
+            // --- 1. DATOS GENERALES ---
+            dto.setIdNomina(n.getId());
+            dto.setPeriodoPago(n.getLoteNomina().getDescripcion() + " - " + n.getLoteNomina().getFechaInicio());
+
+            if (n.getEmpleado() != null && n.getEmpleado().getPersona() != null) {
+                dto.setCedula(n.getEmpleado().getPersona().getCedula());
+                dto.setNombreCompleto(n.getEmpleado().getPersona().getNombre() + " " + n.getEmpleado().getPersona().getApellido());
+            }
+
+            if (n.getId_contrato() != null && n.getId_contrato().getIdTipoContrato() != null) {
+                dto.setCargo(n.getId_contrato().getIdTipoContrato().getNombre());
+            } else {
+                dto.setCargo("Sin Contrato Específico");
+            }
+
+            // --- 2. TOTALES FINALES ---
+            dto.setSueldoBaseBs(n.getSueldo_base());
+
+            // Asumiendo que Total_ingreso ya tiene los bonos + sueldo base. Le sumamos el Cestaticket.
+            BigDecimal totalAsig = (n.getTotal_ingreso() != null ? n.getTotal_ingreso() : BigDecimal.ZERO)
+                    .add(n.getMonto_cestaticket() != null ? n.getMonto_cestaticket() : BigDecimal.ZERO);
+            dto.setTotalAsignaciones(totalAsig);
+
+            dto.setTotalDeducciones(n.getTotal_deducciones());
+            dto.setNetoAPagar(n.getTotal_bs()); // o n.getNeto_a_pagar() dependiendo de si pagas en Bs o USD
+
+            // --- 3. LISTA DINÁMICA DE ASIGNACIONES (Lo que suma) ---
+            List<DetalleReciboDTO> asignaciones = new ArrayList<>();
+
+            if (n.getHora_diurna() != null && n.getHora_diurna().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Bono Horas Diurnas");
+                d.setMonto(n.getHora_diurna());
+                asignaciones.add(d);
+            }
+            if (n.getHora_nocturna() != null && n.getHora_nocturna().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Bono Horas Nocturnas");
+                d.setMonto(n.getHora_nocturna());
+                asignaciones.add(d);
+            }
+            if (n.getHora_fin() != null && n.getHora_fin().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Bono Fin de Semana");
+                d.setMonto(n.getHora_fin());
+                asignaciones.add(d);
+            }
+            if (n.getMonto_cestaticket() != null && n.getMonto_cestaticket().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Cestaticket (Alimentación)");
+                d.setMonto(n.getMonto_cestaticket());
+                asignaciones.add(d);
+            }
+            dto.setAsignaciones(asignaciones);
+
+            // --- 4. LISTA DINÁMICA DE DEDUCCIONES (Lo que resta) ---
+            List<DetalleReciboDTO> deducciones = new ArrayList<>();
+
+            if (n.getMonto_sso() != null && n.getMonto_sso().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("S.S.O.");
+                d.setMonto(n.getMonto_sso());
+                deducciones.add(d);
+            }
+            if (n.getMonto_spf() != null && n.getMonto_spf().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Paro Forzoso (R.P.F)");
+                d.setMonto(n.getMonto_spf());
+                deducciones.add(d);
+            }
+            if (n.getMonto_faov() != null && n.getMonto_faov().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("F.A.O.V.");
+                d.setMonto(n.getMonto_faov());
+                deducciones.add(d);
+            }
+            if (n.getMonto_descuento_hora() != null && n.getMonto_descuento_hora().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Inasistencias/Faltas");
+                d.setMonto(n.getMonto_descuento_hora());
+                deducciones.add(d);
+            }
+            if (n.getOtros_descuento() != null && n.getOtros_descuento().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Préstamos y Adelantos");
+                d.setMonto(n.getOtros_descuento());
+                deducciones.add(d);
+            }
+            dto.setDeducciones(deducciones);
+
+            return dto;
+        }).collect(Collectors.toList());
     }
 
     @Transactional
@@ -74,6 +182,9 @@ public class NominaService {
         // 3. BUCLE PRINCIPAL
         for (Empleado empleado : empleadosActivos) {
             try {
+
+                List<Detalle_nomina> detallesTemporales = new ArrayList<>();
+
                 BigDecimal totalHorasTrabajadas = BigDecimal.ZERO;
                 BigDecimal totalDineroDiurnoUsd = BigDecimal.ZERO;
                 BigDecimal totalDineroFinUsd = BigDecimal.ZERO;
@@ -135,6 +246,13 @@ public class NominaService {
                         BigDecimal subtotalMateriaUsd = horasQuincena.multiply(valorHoraFinalUsd);
                         System.out.println("6. Subtotal a pagar por esta materia: $" + subtotalMateriaUsd);
 
+                        Detalle_nomina detCarga = new Detalle_nomina();
+                        detCarga.setTipoDetalle("ASIGNACION_CARGA");
+                        detCarga.setCargaAcademica(carga);
+                        // Lo pasamos a Bs de una vez para el recibo
+                        detCarga.setValor(subtotalMateriaUsd.multiply(tasaBcv));
+                        detallesTemporales.add(detCarga);
+
                         // Clasificación en los potes
                         if (nombreTurno.contains("NOCTURNO")) {
                             totalDineroNocturnoUsd = totalDineroNocturnoUsd.add(subtotalMateriaUsd);
@@ -153,8 +271,8 @@ public class NominaService {
                 // ==========================================
                 // CONVERSIONES A BS E INGRESOS TOTALES
                 // ==========================================
-                BigDecimal sueldoMensualBs = sueldoMensualUsd.multiply(tasaBcv);
-                BigDecimal sueldoQuincenalBs = sueldoQuincenalUsd.multiply(tasaBcv);
+                BigDecimal sueldoMensualBs = sueldoMensualUsd;
+                BigDecimal sueldoQuincenalBs = sueldoQuincenalUsd;
 
                 BigDecimal totalDineroDiurnoBs = totalDineroDiurnoUsd.multiply(tasaBcv);
                 BigDecimal totalFinBs = totalDineroFinUsd.multiply(tasaBcv);
@@ -205,9 +323,47 @@ public class NominaService {
                 for (Inacistencia inasistencia : inasistencias) {
                     if (inasistencia.getMontoTotal() != null) {
                         totalDescuentoInasistenciaBs = totalDescuentoInasistenciaBs.add(inasistencia.getMontoTotal());
+                        Detalle_nomina detFalta = new Detalle_nomina();
+                        detFalta.setTipoDetalle("DESCUENTO_INASISTENCIA");
+                        detFalta.setInasistencia(inasistencia);
+                        detFalta.setValor(inasistencia.getMontoTotal());
+                        detallesTemporales.add(detFalta);
                     }
                     inasistencia.setActivo(false);
                     inasistenciaRepo.save(inasistencia);
+                }
+
+                // ==========================================
+                // CÁLCULO 5: AJUSTES MANUALES (Positivos y Negativos)
+                // ==========================================
+                BigDecimal totalAjustesPositivosBs = BigDecimal.ZERO;
+                BigDecimal totalAjustesNegativosBs = BigDecimal.ZERO;
+
+                List<Ajuste> ajustesPendientes = ajusteRepository.findByEmpleadoIdAndProcesadoFalse(empleado.getId());
+
+                for (Ajuste ajuste : ajustesPendientes) {
+                    // Asumiendo que el monto del ajuste se registró en USD, lo pasamos a Bs
+                    BigDecimal montoAjusteBs = BigDecimal.valueOf(ajuste.getMonto());
+
+                    Detalle_nomina detAjuste = new Detalle_nomina();
+                    detAjuste.setValor(montoAjusteBs);
+                    // Opcional: si tu Detalle_nomina tiene un campo de descripción, puedes ponerle ajuste.getMotivo()
+
+                    if ("POSITIVO".equalsIgnoreCase(ajuste.getTipo())) {
+                        totalAjustesPositivosBs = totalAjustesPositivosBs.add(montoAjusteBs);
+                        detAjuste.setTipoDetalle("AJUSTE_POSITIVO");
+                        System.out.println("-------------ingresos positivos *-------------- " + totalAjustesPositivosBs);
+                    } else {
+                        totalAjustesNegativosBs = totalAjustesNegativosBs.add(montoAjusteBs);
+                        detAjuste.setTipoDetalle("AJUSTE_NEGATIVO");
+                        System.out.println("+++++++++++++ ajustes negativos --------------" + totalAjustesNegativosBs);
+                    }
+
+                    detallesTemporales.add(detAjuste);
+
+                    // Quemar el ajuste para que no se pague/descuente doble en la siguiente quincena
+                    ajuste.setProcesado(true);
+                    ajusteRepository.save(ajuste);
                 }
 
                 BigDecimal totalDescuentoDeudasBs = BigDecimal.ZERO;
@@ -218,6 +374,12 @@ public class NominaService {
                     if (cuota.compareTo(deuda.getSaldo_pendiente()) > 0) {
                         cuota = deuda.getSaldo_pendiente();
                     }
+                    Detalle_nomina detDeuda = new Detalle_nomina();
+                    detDeuda.setTipoDetalle("DESCUENTO_DEUDA");
+                    detDeuda.setNovedadDescuento(deuda);
+                    detDeuda.setValor(cuota);
+                    detallesTemporales.add(detDeuda);
+
                     totalDescuentoDeudasBs = totalDescuentoDeudasBs.add(cuota);
                     deuda.setSaldo_pendiente(deuda.getSaldo_pendiente().subtract(cuota));
                     if (deuda.getSaldo_pendiente().compareTo(BigDecimal.ZERO) <= 0) {
@@ -243,7 +405,8 @@ public class NominaService {
                 recibo.setHora_diurna(totalDineroDiurnoBs);
                 recibo.setHora_fin(totalFinBs);
                 recibo.setHora_nocturna(totalDineroNocturnoBs);
-                recibo.setTotal_ingreso(totalIngresoAsignacionesBs);
+                System.out.println("--------------- ajuste -------" + totalAjustesPositivosBs);
+                recibo.setTotal_ingreso(totalIngresoAsignacionesBs.add(totalAjustesPositivosBs));
 
                 recibo.setValor_cestaticket(factorCestaticket);
                 recibo.setMonto_cestaticket(montoCestaticketBs);
@@ -260,7 +423,7 @@ public class NominaService {
                 recibo.setMonto_descuento_hora(totalDescuentoInasistenciaBs);
                 recibo.setOtros_descuento(totalDescuentoDeudasBs);
 
-                BigDecimal totalDeduccionesBs = totalDescuentosLegalesBs.add(totalDescuentoDeudasBs).add(totalDescuentoInasistenciaBs);
+                BigDecimal totalDeduccionesBs = totalDescuentosLegalesBs.add(totalDescuentoDeudasBs).add(totalDescuentoInasistenciaBs).add(totalAjustesNegativosBs);
                 recibo.setTotal_deducciones(totalDeduccionesBs);
 
                 BigDecimal granTotalBs = totalIngresoAsignacionesBs.add(montoCestaticketBs);
@@ -272,6 +435,11 @@ public class NominaService {
                 recibo.setNeto_a_pagar(netoAPagarBs.divide(tasaBcv, 2, RoundingMode.HALF_UP));
 
                 nominaRepository.save(recibo);
+
+                for (Detalle_nomina det : detallesTemporales) {
+                    det.setNomina(recibo); // Le asignamos el ID de la cabecera recién creada
+                    detalleNominaRepo.save(det);
+                }
 
                 log.info("-> ✅ Guardado: Empleado ID " + empleado.getId() + " | Neto Bs: " + netoAPagarBs);
 

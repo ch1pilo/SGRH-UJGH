@@ -11,7 +11,11 @@ import java.util.List;
 @Repository
 public interface SeguimientoEntrevistaRepository extends JpaRepository<Seguimiento_entrevista, Long> {
 
-    // Trae el historial de una sola entrevista, ordenado por ID descendente (lo más reciente primero)
-    @Query("SELECT s FROM Seguimiento_entrevista s WHERE s.id_entrevista.id = :idEntrevista ORDER BY s.id DESC")
-    List<Seguimiento_entrevista> buscarHistorialPorEntrevista(@Param("idEntrevista") Long idEntrevista);
+    // Busca todos los seguimientos de una entrevista en específico
+    @Query("SELECT s FROM Seguimiento_entrevista s WHERE s.id_entrevista.id = :idEntrevista")
+    List<Seguimiento_entrevista> findByIdEntrevista(@Param("idEntrevista") Long idEntrevista);
+
+    // Busca los seguimientos activos/pendientes de una entrevista
+    @Query("SELECT s FROM Seguimiento_entrevista s WHERE s.id_entrevista.id = :idEntrevista AND s.estado = 'PENDIENTE'")
+    List<Seguimiento_entrevista> findPendientesByEntrevista(@Param("idEntrevista") Long idEntrevista);
 }

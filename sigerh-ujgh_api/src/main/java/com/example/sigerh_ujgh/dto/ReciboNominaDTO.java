@@ -1,41 +1,28 @@
 package com.example.sigerh_ujgh.dto;
 
+import lombok.Data;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.ArrayList;
 
+@Data
 public class ReciboNominaDTO {
-
+    // --- DATOS DEL EMPLEADO Y LOTE ---
     private Long idNomina;
-    private String periodo;
-    private BigDecimal tasaBcv;
-
-    // --- DATOS DEL EMPLEADO ---
-    private String cedula;
     private String nombreCompleto;
-    private String cargoContrato;
+    private String cedula;
+    private String cargo;
+    private String periodoPago; // Ej: "1ra Quincena Marzo 2026"
 
-    // --- ASIGNACIONES (INGRESOS) ---
-    private BigDecimal sueldoBase;
-    private BigDecimal horasDiurnas;
-    private BigDecimal horasNocturnas;
-    private BigDecimal horasFinSemana;
-    private BigDecimal bonoCestaticket;
+    // --- TOTALES (Para la parte de abajo del recibo) ---
+    private BigDecimal sueldoBaseBs;
     private BigDecimal totalAsignaciones;
-
-    // --- DEDUCCIONES DE LEY ---
-    private BigDecimal montoSSO;
-    private BigDecimal montoSPF;
-    private BigDecimal montoFAOV;
-    private BigDecimal totalDeduccionesLey;
-
-    // --- OTRAS DEDUCCIONES ---
-    private BigDecimal inasistencias;
-    private BigDecimal otrasDeudas;
-    private BigDecimal totalOtrasDeducciones;
-
-    // --- TOTALES FINALES ---
     private BigDecimal totalDeducciones;
-    private BigDecimal netoAPagarBs;
-    private BigDecimal netoAPagarUsd;
+    private BigDecimal netoAPagar;
+
+    // --- LAS LISTAS DINÁMICAS ---
+    private List<DetalleReciboDTO> asignaciones = new ArrayList<>();
+    private List<DetalleReciboDTO> deducciones = new ArrayList<>();
 
     public Long getIdNomina() {
         return idNomina;
@@ -43,30 +30,6 @@ public class ReciboNominaDTO {
 
     public void setIdNomina(Long idNomina) {
         this.idNomina = idNomina;
-    }
-
-    public String getPeriodo() {
-        return periodo;
-    }
-
-    public void setPeriodo(String periodo) {
-        this.periodo = periodo;
-    }
-
-    public BigDecimal getTasaBcv() {
-        return tasaBcv;
-    }
-
-    public void setTasaBcv(BigDecimal tasaBcv) {
-        this.tasaBcv = tasaBcv;
-    }
-
-    public String getCedula() {
-        return cedula;
-    }
-
-    public void setCedula(String cedula) {
-        this.cedula = cedula;
     }
 
     public String getNombreCompleto() {
@@ -77,52 +40,36 @@ public class ReciboNominaDTO {
         this.nombreCompleto = nombreCompleto;
     }
 
-    public String getCargoContrato() {
-        return cargoContrato;
+    public String getCedula() {
+        return cedula;
     }
 
-    public void setCargoContrato(String cargoContrato) {
-        this.cargoContrato = cargoContrato;
+    public void setCedula(String cedula) {
+        this.cedula = cedula;
     }
 
-    public BigDecimal getSueldoBase() {
-        return sueldoBase;
+    public String getCargo() {
+        return cargo;
     }
 
-    public void setSueldoBase(BigDecimal sueldoBase) {
-        this.sueldoBase = sueldoBase;
+    public void setCargo(String cargo) {
+        this.cargo = cargo;
     }
 
-    public BigDecimal getHorasDiurnas() {
-        return horasDiurnas;
+    public String getPeriodoPago() {
+        return periodoPago;
     }
 
-    public void setHorasDiurnas(BigDecimal horasDiurnas) {
-        this.horasDiurnas = horasDiurnas;
+    public void setPeriodoPago(String periodoPago) {
+        this.periodoPago = periodoPago;
     }
 
-    public BigDecimal getHorasNocturnas() {
-        return horasNocturnas;
+    public BigDecimal getSueldoBaseBs() {
+        return sueldoBaseBs;
     }
 
-    public void setHorasNocturnas(BigDecimal horasNocturnas) {
-        this.horasNocturnas = horasNocturnas;
-    }
-
-    public BigDecimal getHorasFinSemana() {
-        return horasFinSemana;
-    }
-
-    public void setHorasFinSemana(BigDecimal horasFinSemana) {
-        this.horasFinSemana = horasFinSemana;
-    }
-
-    public BigDecimal getBonoCestaticket() {
-        return bonoCestaticket;
-    }
-
-    public void setBonoCestaticket(BigDecimal bonoCestaticket) {
-        this.bonoCestaticket = bonoCestaticket;
+    public void setSueldoBaseBs(BigDecimal sueldoBaseBs) {
+        this.sueldoBaseBs = sueldoBaseBs;
     }
 
     public BigDecimal getTotalAsignaciones() {
@@ -133,62 +80,6 @@ public class ReciboNominaDTO {
         this.totalAsignaciones = totalAsignaciones;
     }
 
-    public BigDecimal getMontoSSO() {
-        return montoSSO;
-    }
-
-    public void setMontoSSO(BigDecimal montoSSO) {
-        this.montoSSO = montoSSO;
-    }
-
-    public BigDecimal getMontoSPF() {
-        return montoSPF;
-    }
-
-    public void setMontoSPF(BigDecimal montoSPF) {
-        this.montoSPF = montoSPF;
-    }
-
-    public BigDecimal getMontoFAOV() {
-        return montoFAOV;
-    }
-
-    public void setMontoFAOV(BigDecimal montoFAOV) {
-        this.montoFAOV = montoFAOV;
-    }
-
-    public BigDecimal getTotalDeduccionesLey() {
-        return totalDeduccionesLey;
-    }
-
-    public void setTotalDeduccionesLey(BigDecimal totalDeduccionesLey) {
-        this.totalDeduccionesLey = totalDeduccionesLey;
-    }
-
-    public BigDecimal getInasistencias() {
-        return inasistencias;
-    }
-
-    public void setInasistencias(BigDecimal inasistencias) {
-        this.inasistencias = inasistencias;
-    }
-
-    public BigDecimal getOtrasDeudas() {
-        return otrasDeudas;
-    }
-
-    public void setOtrasDeudas(BigDecimal otrasDeudas) {
-        this.otrasDeudas = otrasDeudas;
-    }
-
-    public BigDecimal getTotalOtrasDeducciones() {
-        return totalOtrasDeducciones;
-    }
-
-    public void setTotalOtrasDeducciones(BigDecimal totalOtrasDeducciones) {
-        this.totalOtrasDeducciones = totalOtrasDeducciones;
-    }
-
     public BigDecimal getTotalDeducciones() {
         return totalDeducciones;
     }
@@ -197,19 +88,27 @@ public class ReciboNominaDTO {
         this.totalDeducciones = totalDeducciones;
     }
 
-    public BigDecimal getNetoAPagarBs() {
-        return netoAPagarBs;
+    public BigDecimal getNetoAPagar() {
+        return netoAPagar;
     }
 
-    public void setNetoAPagarBs(BigDecimal netoAPagarBs) {
-        this.netoAPagarBs = netoAPagarBs;
+    public void setNetoAPagar(BigDecimal netoAPagar) {
+        this.netoAPagar = netoAPagar;
     }
 
-    public BigDecimal getNetoAPagarUsd() {
-        return netoAPagarUsd;
+    public List<DetalleReciboDTO> getAsignaciones() {
+        return asignaciones;
     }
 
-    public void setNetoAPagarUsd(BigDecimal netoAPagarUsd) {
-        this.netoAPagarUsd = netoAPagarUsd;
+    public void setAsignaciones(List<DetalleReciboDTO> asignaciones) {
+        this.asignaciones = asignaciones;
+    }
+
+    public List<DetalleReciboDTO> getDeducciones() {
+        return deducciones;
+    }
+
+    public void setDeducciones(List<DetalleReciboDTO> deducciones) {
+        this.deducciones = deducciones;
     }
 }

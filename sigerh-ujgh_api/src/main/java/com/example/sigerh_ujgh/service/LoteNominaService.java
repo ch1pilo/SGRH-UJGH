@@ -1,5 +1,6 @@
 package com.example.sigerh_ujgh.service;
 
+import com.example.sigerh_ujgh.dto.DetalleReciboDTO;
 import com.example.sigerh_ujgh.dto.ReciboNominaDTO;
 import com.example.sigerh_ujgh.entity.Inacistencia;
 import com.example.sigerh_ujgh.entity.LoteNomina;
@@ -10,6 +11,9 @@ import com.example.sigerh_ujgh.repository.NominaRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -61,58 +65,7 @@ public class LoteNominaService {
         return lote;
     }
 
-    public List<ReciboNominaDTO> obtenerReporteNomina(Long idLoteNomina) {
-        List<Nomina> nominas = nominaRepository.findByLoteNominaId(idLoteNomina);
 
-        return nominas.stream().map(n -> {
-            ReciboNominaDTO dto = new ReciboNominaDTO();
-
-            // Datos Generales
-            dto.setIdNomina(n.getId());
-            dto.setTasaBcv(n.getLoteNomina().getTasa_bcv());
-            dto.setPeriodo("Lote #" + n.getLoteNomina().getId() + " - " + n.getLoteNomina().getEstatus());
-
-            // Datos del Empleado (Asumiendo que Empleado tiene getPersona())
-            if (n.getEmpleado() != null && n.getEmpleado().getPersona() != null) {
-                dto.setCedula(n.getEmpleado().getPersona().getCedula());
-                dto.setNombreCompleto(n.getEmpleado().getPersona().getNombre() + " " + n.getEmpleado().getPersona().getApellido());
-            }
-
-            if (n.getId_contrato() != null && n.getId_contrato().getIdTipoContrato() != null) {
-                dto.setCargoContrato(n.getId_contrato().getIdTipoContrato().getNombre());
-            } else {
-                dto.setCargoContrato("Sin Contrato Específico");
-            }
-
-            // Asignaciones
-            dto.setSueldoBase(n.getSueldo_base());
-            dto.setHorasDiurnas(n.getHora_diurna());
-            dto.setHorasNocturnas(n.getHora_nocturna());
-            dto.setHorasFinSemana(n.getHora_fin());
-            dto.setBonoCestaticket(n.getMonto_cestaticket());
-            // Sumamos Ingresos brutos + Cestaticket
-            dto.setTotalAsignaciones(n.getTotal_ingreso().add(n.getMonto_cestaticket()));
-
-            // Deducciones Ley
-            dto.setMontoSSO(n.getMonto_sso());
-            dto.setMontoSPF(n.getMonto_spf());
-            dto.setMontoFAOV(n.getMonto_faov());
-            dto.setTotalDeduccionesLey(n.getTotal_descuento_legales());
-
-            // Otras Deducciones
-            dto.setInasistencias(n.getMonto_descuento_hora());
-            dto.setOtrasDeudas(n.getOtros_descuento());
-            // Sumamos inasistencias + deudas
-            dto.setTotalOtrasDeducciones(n.getMonto_descuento_hora().add(n.getOtros_descuento()));
-
-            // Totales Finales
-            dto.setTotalDeducciones(n.getTotal_deducciones());
-            dto.setNetoAPagarBs(n.getTotal_bs());
-            dto.setNetoAPagarUsd(n.getNeto_a_pagar()); // Asumiendo que esta columna guarda el total en Dólares
-
-            return dto;
-        }).collect(Collectors.toList());
-    }
 
     public LoteNomina obtenerActivo() {
         return repository.findByEstatus("ABIERTO").orElse(null);
