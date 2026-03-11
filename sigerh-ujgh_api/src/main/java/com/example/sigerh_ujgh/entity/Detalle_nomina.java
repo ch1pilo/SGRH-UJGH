@@ -49,6 +49,19 @@ public class Detalle_nomina {
     @Column(name = "valor")
     private BigDecimal valor;
 
+    // En la entidad Detalle_nomina.java
+    @ManyToOne
+    @JoinColumn(name = "id_ajuste", nullable = true)
+    private Ajuste ajuste;
+
+    public Ajuste getAjuste() {
+        return ajuste;
+    }
+
+    public void setAjuste(Ajuste ajuste) {
+        this.ajuste = ajuste;
+    }
+
     public Long getId() {
         return id;
     }

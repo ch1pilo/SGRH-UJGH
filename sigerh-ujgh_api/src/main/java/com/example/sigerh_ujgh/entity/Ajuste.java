@@ -1,8 +1,12 @@
 package com.example.sigerh_ujgh.entity;
+
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDate;
 
 @Entity
+@Data
 public class Ajuste {
         @Id
         @GeneratedValue(strategy = GenerationType.IDENTITY)
