@@ -2,6 +2,7 @@ package com.example.sigerh_ujgh.controller;
 
 import com.example.sigerh_ujgh.dto.ReciboNominaDTO;
 import com.example.sigerh_ujgh.entity.LoteNomina;
+import com.example.sigerh_ujgh.service.CorreoService;
 import com.example.sigerh_ujgh.service.LoteNominaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,8 @@ public class LoteNominaController {
     @Autowired
     private LoteNominaService service;
 
+    @Autowired
+    private CorreoService correoService;
     @GetMapping
     public List<LoteNomina> listar() {
         return service.listar();
@@ -32,5 +35,15 @@ public class LoteNominaController {
         LoteNomina lote = service.cerrarLoteNomina(id);
         if (lote != null) return ResponseEntity.ok(lote);
         return ResponseEntity.notFound().build();
+    }
+
+    @PostMapping("/{id}/enviar-correos")
+    public ResponseEntity<?> enviarCorreosDelLote(@PathVariable Long id) {
+        try {
+            correoService.enviarCorreosPorLote(id);
+            return ResponseEntity.ok("Correos enviados exitosamente.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 }
