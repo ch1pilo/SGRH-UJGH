@@ -78,7 +78,7 @@ public class Persona {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = true, unique = true, length = 200)
+    @Column(nullable = true, length = 200)
     private String cedula;
 
     @Column
