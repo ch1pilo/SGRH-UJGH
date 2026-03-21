@@ -1,8 +1,10 @@
 package com.example.sigerh_ujgh.service;
 
+import com.example.sigerh_ujgh.entity.Contrato;
 import com.example.sigerh_ujgh.entity.Empleado;
 import com.example.sigerh_ujgh.entity.Entrevista; // Usamos Entrevista
 import com.example.sigerh_ujgh.entity.Persona;
+import com.example.sigerh_ujgh.repository.ContratoRepository;
 import com.example.sigerh_ujgh.repository.EmpleadoRepository;
 import com.example.sigerh_ujgh.repository.EntrevistaRepository; // Repo de Entrevista
 import com.example.sigerh_ujgh.repository.PersonaRepository;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,6 +27,8 @@ public class EmpleadoService {
     private PersonaRepository personaRepository;
 
     @Autowired
+    private ContratoRepository contratoRepository;
+    @Autowired
     private EntrevistaRepository entrevistaRepository; // <--- AQUÍ BUSCAMOS LA ENTREVISTA
 
     public List<Empleado> listar() {
@@ -34,6 +39,25 @@ public class EmpleadoService {
         return empleadoRepository.save(empleado);
     }
 
+    public List<Empleado> empleadosContratos() {
+        List<Empleado> empleados = empleadoRepository.findAll();
+        List<Contrato> contratos = contratoRepository.findAll();
+
+        // 1. CORRECCIÓN: Hay que decirle de qué tipo es la lista e inicializarla
+        List<Empleado> empleadoContratos = new ArrayList<>();
+
+        for (Contrato contrato : contratos) {
+            for (Empleado empleado : empleados) {
+                if (contrato.getEmpleado().getId().equals(empleado.getId())) {
+                    if (!empleadoContratos.contains(empleado)) {
+                        empleadoContratos.add(empleado);
+                    }
+                }
+            }
+        }
+
+        return empleadoContratos;
+    }
     @Transactional
     public Empleado actualizarEstatus(Long idEmpleado, String nuevoEstatus) {
         // 1. Buscamos al empleado

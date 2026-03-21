@@ -24,6 +24,10 @@ public class EmpleadoController {
         return empleadoService.listar();
     }
 
+    @GetMapping("/empleadosContratos")
+    public List<Empleado> listaContratos(){
+        return empleadoService.empleadosContratos();
+    };
     // 2. Guardar Normal
     @PostMapping
     public Empleado guardar(@RequestBody Empleado empleado) {

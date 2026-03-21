@@ -15,6 +15,10 @@ public class Nomina {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(precision = 10, scale = 2)
+    private BigDecimal montoCajaAhorro;
+
+
     // Relación con el Lote (Padre)
     @ManyToOne
     @JoinColumn(name = "id_lote_nomina", nullable = false)
@@ -27,6 +31,14 @@ public class Nomina {
 
     @Column
     private BigDecimal hora_fin;
+
+    public BigDecimal getMontoCajaAhorro() {
+        return montoCajaAhorro;
+    }
+
+    public void setMontoCajaAhorro(BigDecimal montoCajaAhorro) {
+        this.montoCajaAhorro = montoCajaAhorro;
+    }
 
     public Long getId() {
         return id;

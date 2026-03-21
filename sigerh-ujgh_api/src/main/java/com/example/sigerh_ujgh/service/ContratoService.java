@@ -24,6 +24,17 @@ public class ContratoService {
         return repository.findAll();
     }
 
+    public Contrato inactivo(Long id){
+
+        Contrato existe = repository.findById(id).orElse(null);
+
+        if (existe != null ){
+            existe.setActivo(false);
+            return repository.save(existe);
+        }
+        return null;
+    };
+
     public Contrato guardar(Contrato contrato) {
         // Aquí podrías validar fechas o lógica de negocio si es necesario
 

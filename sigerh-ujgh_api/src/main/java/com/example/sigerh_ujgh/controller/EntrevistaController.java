@@ -25,5 +25,9 @@ public class EntrevistaController {
         return entrevistaService.guardar(entrevista);
     }
 
+    @PutMapping("/editar/{id}")
+    public Entrevista editar(@PathVariable Long id, @RequestBody Entrevista entrevista){
+        return entrevistaService.editar(id, entrevista);
+    }
 
 }

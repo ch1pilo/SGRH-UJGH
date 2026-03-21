@@ -33,7 +33,7 @@ public class Novedad_descuento {
     @Column
     private LocalDate fecha_carga;
 
-    @Column
+    @Column(columnDefinition = "TEXT")
     private String observacion;
 
     @Column

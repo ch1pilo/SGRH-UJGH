@@ -37,7 +37,7 @@ public class Inacistencia {
             this.activo = activo;
         }
 
-        @Column(length = 255)
+        @Column(columnDefinition = "TEXT")
         private String observacion;
 
         // --- RELACIONES ---

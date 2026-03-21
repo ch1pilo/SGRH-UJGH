@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -26,11 +27,11 @@ public class Entrevista {
         this.persona = persona;
     }
 
-    public LocalDate getFecha_programada() {
+    public LocalDateTime getFecha_programada() {
         return fecha_programada;
     }
 
-    public void setFecha_programada(LocalDate fecha_programada) {
+    public void setFecha_programada(LocalDateTime fecha_programada) {
         this.fecha_programada = fecha_programada;
     }
 
@@ -52,8 +53,9 @@ public class Entrevista {
 
     @Column
     @JsonProperty("fechaProgramada") // Para que React lo envíe como fechaProgramada
-    private LocalDate fecha_programada;
-    @Column
+    private LocalDateTime fecha_programada;
+
+    @Column(columnDefinition = "TEXT")
     private String observacion;
 
     public Boolean getEstatus() {

@@ -23,6 +23,16 @@ public class ReciboNominaDTO {
     // --- LAS LISTAS DINÁMICAS ---
     private List<DetalleReciboDTO> asignaciones = new ArrayList<>();
     private List<DetalleReciboDTO> deducciones = new ArrayList<>();
+    // En ReciboNominaDTO.java
+    private BigDecimal montoCajaAhorro;
+
+    public BigDecimal getMontoCajaAhorro() {
+        return montoCajaAhorro;
+    }
+
+    public void setMontoCajaAhorro(BigDecimal montoCajaAhorro) {
+        this.montoCajaAhorro = montoCajaAhorro;
+    }
 
     public Long getIdNomina() {
         return idNomina;

@@ -12,8 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -41,6 +43,8 @@ public class NominaService {
     private Detalle_nominaRepository detalleNominaRepo;
     @Autowired
     private AjusteRepository ajusteRepository;
+    @Autowired
+    private MovimientoCajaAhorroRepository movimientoCajaAhorroRepository;
 
     public List<Nomina> listarPorLote(Long idLoteNomina) {
         return nominaRepository.findByLoteNominaId(idLoteNomina);
@@ -146,11 +150,18 @@ public class NominaService {
                 d.setMonto(n.getOtros_descuento());
                 deducciones.add(d);
             }
+            if (n.getMontoCajaAhorro() != null && n.getMontoCajaAhorro().compareTo(BigDecimal.ZERO) > 0) {
+                DetalleReciboDTO d = new DetalleReciboDTO();
+                d.setConcepto("Caja de Ahorros (10%)");
+                d.setMonto(n.getMontoCajaAhorro());
+                deducciones.add(d);
+            }
             dto.setDeducciones(deducciones);
 
             return dto;
         }).collect(Collectors.toList());
     }
+
 
     @Transactional
     public void calcularNominaMasiva(Long idLoteNomina) {
@@ -172,6 +183,7 @@ public class NominaService {
 
         // 2. CONFIGURACIONES GLOBALES
         BigDecimal tasaBcv = obtenerConfig("tasa_bcv", new BigDecimal("36.50"));
+        BigDecimal porcCajaAhorro = obtenerConfig("porcentaje_caja_ahorro", new BigDecimal("0.10"));
         BigDecimal factorCestaticket = obtenerConfig("Factor Bono", new BigDecimal("0.0")); // FACTOR POR HORA
         BigDecimal porcSSO = obtenerConfig("porcentaje_sso", new BigDecimal("0.04"));
         BigDecimal porcSPF = obtenerConfig("porcentaje_spf", new BigDecimal("0.005"));
@@ -290,6 +302,7 @@ public class NominaService {
                 // ==========================================
                 // CÁLCULO 3: DEDUCCIONES DE LEY
                 // ==========================================
+                BigDecimal montoCajaAhorroBs = BigDecimal.ZERO;
                 BigDecimal montoSSO_Bs = BigDecimal.ZERO;
                 BigDecimal montoSPF_Bs = BigDecimal.ZERO;
                 BigDecimal montoFAOV_Bs = BigDecimal.ZERO;
@@ -310,6 +323,8 @@ public class NominaService {
                             .divide(new BigDecimal("2"), 2, RoundingMode.HALF_UP);
 
                     montoFAOV_Bs = sueldoQuincenalUsd.multiply(porcFAOV).setScale(2, RoundingMode.HALF_UP);
+
+                    montoCajaAhorroBs = sueldoQuincenalBs.multiply(porcCajaAhorro).setScale(2, RoundingMode.HALF_UP);
 
                     totalDescuentosLegalesBs = montoSSO_Bs.add(montoSPF_Bs).add(montoFAOV_Bs);
                 }
@@ -411,6 +426,7 @@ public class NominaService {
                 recibo.setValor_cestaticket(factorCestaticket);
                 recibo.setMonto_cestaticket(montoCestaticketBs);
 
+                recibo.setMontoCajaAhorro(montoCajaAhorroBs);
                 recibo.setPorcentaje_sso(porcSSO);
                 recibo.setPorcentaje_spf(porcSPF);
                 recibo.setPorcentaje_Faov(porcFAOV);
@@ -423,8 +439,7 @@ public class NominaService {
                 recibo.setMonto_descuento_hora(totalDescuentoInasistenciaBs);
                 recibo.setOtros_descuento(totalDescuentoDeudasBs);
 
-                BigDecimal totalDeduccionesBs = totalDescuentosLegalesBs.add(totalDescuentoDeudasBs).add(totalDescuentoInasistenciaBs).add(totalAjustesNegativosBs);
-                recibo.setTotal_deducciones(totalDeduccionesBs);
+                BigDecimal totalDeduccionesBs = totalDescuentosLegalesBs.add(totalDescuentoDeudasBs).add(totalDescuentoInasistenciaBs).add(totalAjustesNegativosBs).add(montoCajaAhorroBs);                recibo.setTotal_deducciones(totalDeduccionesBs);
 
                 BigDecimal granTotalBs = totalIngresoAsignacionesBs.add(montoCestaticketBs);
                 BigDecimal netoAPagarBs = granTotalBs.subtract(totalDeduccionesBs);
@@ -439,6 +454,28 @@ public class NominaService {
                 for (Detalle_nomina det : detallesTemporales) {
                     det.setNomina(recibo); // Le asignamos el ID de la cabecera recién creada
                     detalleNominaRepo.save(det);
+                }
+
+                // REGISTRO EN EL HISTORIAL (LEDGER) DE CAJA AHORRO
+                if (montoCajaAhorroBs.compareTo(BigDecimal.ZERO) > 0) {
+                    BigDecimal saldoAnterior = BigDecimal.ZERO;
+                    Optional<MovimientoCajaAhorro> ultimoMov = movimientoCajaAhorroRepository.findUltimoMovimientoByEmpleado(empleado.getId());
+                    if (ultimoMov.isPresent()) {
+                        saldoAnterior = ultimoMov.get().getAcumuladoTotal();
+                    }
+
+                    MovimientoCajaAhorro nuevoMovimiento = new MovimientoCajaAhorro();
+                    nuevoMovimiento.setEmpleado(empleado);
+                    nuevoMovimiento.setTipoMovimiento("APORTE_NÓMINA");
+                    nuevoMovimiento.setReferencia("Lote #" + lote.getId() + " - " + lote.getDescripcion());
+                    nuevoMovimiento.setAporteEmpleado(montoCajaAhorroBs);
+                    nuevoMovimiento.setAporteUniversidad(montoCajaAhorroBs); // La universidad aporta el mismo %
+
+                    BigDecimal nuevoTotal = saldoAnterior.add(montoCajaAhorroBs).add(montoCajaAhorroBs);
+                    nuevoMovimiento.setAcumuladoTotal(nuevoTotal);
+                    nuevoMovimiento.setFechaOperacion(LocalDateTime.now());
+
+                    movimientoCajaAhorroRepository.save(nuevoMovimiento);
                 }
 
                 log.info("-> ✅ Guardado: Empleado ID " + empleado.getId() + " | Neto Bs: " + netoAPagarBs);

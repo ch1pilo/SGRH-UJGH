@@ -52,6 +52,156 @@ public class NominaController {
         return ResponseEntity.ok(recibos);
     }
 
+    @GetMapping("/reporte-pagos-excel/{id}")
+    public ResponseEntity<byte[]> descargarReportePagosExcel(@PathVariable Long id) throws Exception {
+        List<Nomina> nominas = nominaRepository.findByLoteNominaId(id);
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Reporte Pagos");
+
+            // --- ESTILOS ---
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.SEA_GREEN.getIndex()); // Color verde para pagos
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle currencyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            currencyStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // --- CABECERAS ---
+            String[] columnas = {"N°", "CÉDULA", "NOMBRES Y APELLIDOS", "SUELDO BASE", "HORAS/BONOS EXTRA", "CESTA TICKET", "NETO A PAGAR (Bs)", "NETO A PAGAR ($)"};
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < columnas.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columnas[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // --- LLENADO DE DATOS ---
+            int rowIdx = 1;
+            for (Nomina n : nominas) {
+                Row row = sheet.createRow(rowIdx++);
+
+                double sueldoBase = n.getSueldo_base() != null ? n.getSueldo_base().doubleValue() : 0.0;
+                double cestaTicket = n.getMonto_cestaticket() != null ? n.getMonto_cestaticket().doubleValue() : 0.0;
+                double totalIngresos = n.getTotal_ingreso() != null ? n.getTotal_ingreso().doubleValue() : 0.0;
+
+                // Matemática para sacar los bonos extras: Total Ingresos menos Sueldo Base y Cesta Ticket
+                double bonosExtra = totalIngresos - sueldoBase - cestaTicket;
+
+                // El neto a pagar real sin las leyes restando
+                double netoAPagarBs = sueldoBase + bonosExtra + cestaTicket;
+
+                // Cálculo de dólares (si aplica)
+                double tasaUsd = n.getLoteNomina().getTasa_bcv() != null ? n.getLoteNomina().getTasa_bcv().doubleValue() : 1.0;
+                double netoAPagarUsd = tasaUsd > 0 ? (netoAPagarBs / tasaUsd) : 0.0;
+
+                row.createCell(0).setCellValue(rowIdx - 1);
+                row.createCell(1).setCellValue("V-" + n.getEmpleado().getPersona().getCedula());
+                row.createCell(2).setCellValue(n.getEmpleado().getPersona().getNombre() + " " + n.getEmpleado().getPersona().getApellido());
+
+                Cell cb = row.createCell(3); cb.setCellValue(sueldoBase); cb.setCellStyle(currencyStyle);
+                Cell cbe = row.createCell(4); cbe.setCellValue(bonosExtra); cbe.setCellStyle(currencyStyle);
+                Cell cct = row.createCell(5); cct.setCellValue(cestaTicket); cct.setCellStyle(currencyStyle);
+                Cell cnb = row.createCell(6); cnb.setCellValue(netoAPagarBs); cnb.setCellStyle(currencyStyle);
+                Cell cnu = row.createCell(7); cnu.setCellValue(netoAPagarUsd); cnu.setCellStyle(currencyStyle);
+            }
+
+            for (int i = 0; i < columnas.length; i++) sheet.autoSizeColumn(i);
+
+            workbook.write(out);
+            byte[] excelBytes = out.toByteArray();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.valueOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("attachment", "Reporte_Pagos_Lote_" + id + ".xlsx");
+
+            return ResponseEntity.ok().headers(headers).body(excelBytes);
+        }
+    }
+
+    @GetMapping("/reporte-leyes-excel/{id}")
+    public ResponseEntity<byte[]> descargarReporteLeyesExcel(@PathVariable Long id) throws Exception {
+        List<Nomina> nominas = nominaRepository.findByLoteNominaId(id);
+
+        try (Workbook workbook = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = workbook.createSheet("Reporte Leyes");
+
+            // --- ESTILOS ---
+            CellStyle headerStyle = workbook.createCellStyle();
+            Font headerFont = workbook.createFont();
+            headerFont.setBold(true);
+            headerFont.setColor(IndexedColors.WHITE.getIndex());
+            headerStyle.setFont(headerFont);
+            headerStyle.setFillForegroundColor(IndexedColors.DARK_BLUE.getIndex());
+            headerStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+            headerStyle.setAlignment(HorizontalAlignment.CENTER);
+            headerStyle.setBorderBottom(BorderStyle.THIN);
+            headerStyle.setBorderTop(BorderStyle.THIN);
+            headerStyle.setBorderLeft(BorderStyle.THIN);
+            headerStyle.setBorderRight(BorderStyle.THIN);
+
+            CellStyle currencyStyle = workbook.createCellStyle();
+            DataFormat format = workbook.createDataFormat();
+            currencyStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+            // --- CABECERAS ---
+            String[] columnas = {"N°", "CÉDULA", "NOMBRES Y APELLIDOS", "SUELDO BASE", "S.S.O (4%)", "S.P.F (0.5%)", "F.A.O.V (1%)", "CAJA AHORROS (10%)", "TOTAL DEDUCCIONES LEY"};
+            Row headerRow = sheet.createRow(0);
+            for (int i = 0; i < columnas.length; i++) {
+                Cell cell = headerRow.createCell(i);
+                cell.setCellValue(columnas[i]);
+                cell.setCellStyle(headerStyle);
+            }
+
+            // --- LLENADO DE DATOS ---
+            int rowIdx = 1;
+            for (Nomina n : nominas) {
+                Row row = sheet.createRow(rowIdx++);
+
+                double sueldoBase = n.getSueldo_base() != null ? n.getSueldo_base().doubleValue() : 0.0;
+                double sso = n.getMonto_sso() != null ? n.getMonto_sso().doubleValue() : 0.0;
+                double spf = n.getMonto_spf() != null ? n.getMonto_spf().doubleValue() : 0.0;
+                double faov = n.getMonto_faov() != null ? n.getMonto_faov().doubleValue() : 0.0;
+
+                // Cálculo de la Caja de Ahorros (10% del sueldo base)
+                double cajaAhorros = n.getMontoCajaAhorro() != null ? n.getMontoCajaAhorro().doubleValue() : 0.0;
+                double totalDeduccionesLey = sso + spf + faov + cajaAhorros;
+
+                row.createCell(0).setCellValue(rowIdx - 1);
+                row.createCell(1).setCellValue("V-" + n.getEmpleado().getPersona().getCedula());
+                row.createCell(2).setCellValue(n.getEmpleado().getPersona().getNombre() + " " + n.getEmpleado().getPersona().getApellido());
+
+                Cell cb = row.createCell(3); cb.setCellValue(sueldoBase); cb.setCellStyle(currencyStyle);
+                Cell cs = row.createCell(4); cs.setCellValue(sso); cs.setCellStyle(currencyStyle);
+                Cell cp = row.createCell(5); cp.setCellValue(spf); cp.setCellStyle(currencyStyle);
+                Cell cf = row.createCell(6); cf.setCellValue(faov); cf.setCellStyle(currencyStyle);
+                Cell cca = row.createCell(7); cca.setCellValue(cajaAhorros); cca.setCellStyle(currencyStyle);
+                Cell ctot = row.createCell(8); ctot.setCellValue(totalDeduccionesLey); ctot.setCellStyle(currencyStyle);
+            }
+
+            for (int i = 0; i < columnas.length; i++) sheet.autoSizeColumn(i);
+
+            workbook.write(out);
+            byte[] excelBytes = out.toByteArray();
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.valueOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            headers.setContentDispositionFormData("attachment", "Reporte_Leyes_Lote_" + id + ".xlsx");
+
+            return ResponseEntity.ok().headers(headers).body(excelBytes);
+        }
+    }
+
     @GetMapping("/lotes/{id}/reporte-completo")
     public ResponseEntity<byte[]> generarSabanaNominaExcel(@PathVariable Long id) {
         try (Workbook workbook = new XSSFWorkbook();

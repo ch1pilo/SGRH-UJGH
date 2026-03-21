@@ -3,6 +3,7 @@ package com.example.sigerh_ujgh.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -14,7 +15,7 @@ public class Seguimiento_entrevista {
 
     // Cambiado a LocalDate para que coincida con Entrevista.fecha_programada
     @Column(name = "fecha_entrevista")
-    private LocalDate fecha_entrevista;
+    private LocalDateTime fecha_entrevista;
 
     @ManyToOne
     @JoinColumn(name = "id_entrevista")
@@ -25,7 +26,7 @@ public class Seguimiento_entrevista {
     private String estado;
 
     // Corregido el error de tipeo (obserbacion -> observacion)
-    @Column(name = "observacion")
+    @Column(name = "observacion", columnDefinition = "TEXT")
     private String observacion;
 
     @Column(name = "id_usuario")
@@ -36,8 +37,8 @@ public class Seguimiento_entrevista {
     public long getId() { return id; }
     public void setId(long id) { this.id = id; }
 
-    public LocalDate getFecha_entrevista() { return fecha_entrevista; }
-    public void setFecha_entrevista(LocalDate fecha_entrevista) { this.fecha_entrevista = fecha_entrevista; }
+    public LocalDateTime getFecha_entrevista() { return fecha_entrevista; }
+    public void setFecha_entrevista(LocalDateTime fecha_entrevista) { this.fecha_entrevista = fecha_entrevista; }
 
     public Entrevista getId_entrevista() { return id_entrevista; }
     public void setId_entrevista(Entrevista id_entrevista) { this.id_entrevista = id_entrevista; }

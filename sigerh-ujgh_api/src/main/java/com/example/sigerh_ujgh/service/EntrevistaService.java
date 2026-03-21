@@ -18,6 +18,19 @@ public class EntrevistaService {
         return entrevistaRepository.save(entrevista);
     }
 
+    public Entrevista editar(Long id, Entrevista datosNuevos) {
+        // 1. Buscamos la entrevista original en la base de datos
+        Entrevista entrevistaExistente = entrevistaRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró la entrevista con ID: " + id));
+
+        // 2. Actualizamos SOLO los campos que nos interesan (Fecha y Observación)
+        // OJO: Asegúrate de que los nombres de los "setters" coincidan con los tuyos
+        entrevistaExistente.setFecha_programada(datosNuevos.getFecha_programada());
+        entrevistaExistente.setObservacion(datosNuevos.getObservacion());
+
+        // 3. Guardamos los cambios y retornamos la entrevista actualizada
+        return entrevistaRepository.save(entrevistaExistente);
+    }
 
     public Entrevista actualizar (Long id, Entrevista entrevista){
         Entrevista existe = entrevistaRepository.findById(id).orElse(null);

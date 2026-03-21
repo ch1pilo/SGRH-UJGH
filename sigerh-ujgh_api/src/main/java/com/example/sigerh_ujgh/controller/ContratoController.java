@@ -29,6 +29,12 @@ public class ContratoController {
         return service.listarTodos();
     }
 
+    @PutMapping("/inactivo/{id}")
+    public Contrato inactivo (@PathVariable Long id ){
+        System.out.println("entrando al controlador " + id);
+        return service.inactivo(id);
+    }
+
     // --- NUEVO ENDPOINT PARA LA VISTA PRINCIPAL ---
     // Devuelve los empleados con sus contratos anidados
     @GetMapping("/agrupados")
